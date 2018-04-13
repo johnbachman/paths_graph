@@ -2,7 +2,7 @@ import logging
 import itertools
 import numpy as np
 import networkx as nx
-from .paths_graph import get_reachable_sets, PathsGraph
+from .pg import get_reachable_sets, PathsGraph
 from .cfpg import CFPG
 
 logger = logging.getLogger('paths_graph')

@@ -1,9 +1,8 @@
 import os
 from collections import Counter
-import pygraphviz
-import networkx as nx
 import numpy as np
-from indra.explanation.paths_graph import *
+import networkx as nx
+from paths_graph import *
 
 source = 'A'
 target = 'D'
@@ -363,4 +362,4 @@ def test_paths_tree_weighted_sampling():
     assert ctr[('A', 'C', 'D')] == 256
 
 if __name__ == '__main__':
-    test_sample_paths_weighted_signed()
+    test_paths_tree()

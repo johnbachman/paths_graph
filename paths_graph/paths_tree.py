@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import networkx as nx
-from indra import has_config
 
 class PathsTree(object):
     """Build a tree representing a set of paths.
@@ -76,7 +75,7 @@ class PathsTree(object):
                 if not out_edges:
                     break
                 # For determinism in testing, sort the out edges
-                if has_config('TEST_FLAG'):
+                if 'TEST_FLAG' in os.environ:
                     out_edges.sort()
                 # The float is necessary here for Python 2 compatibility
                 weights = [float(t[2]['weight']) for t in out_edges]

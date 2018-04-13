@@ -3,7 +3,7 @@ import logging
 from copy import copy, deepcopy
 import numpy as np
 import networkx as nx
-from .paths_graph import PathsGraph, PathSamplingException
+from .pg import PathsGraph, PathSamplingException
 from indra import has_config
 
 logger = logging.getLogger('pre_cfpg')

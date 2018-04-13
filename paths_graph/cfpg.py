@@ -4,7 +4,7 @@ import itertools
 from collections import Counter
 import numpy as np
 import networkx as nx
-from .paths_graph import PathsGraph
+from .pg import PathsGraph
 from .pre_cfpg import PreCFPG, prune
 
 
