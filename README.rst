@@ -3,9 +3,8 @@ paths_graph
 
 .. image:: https://travis-ci.org/johnbachman/paths_graph.svg?branch=master
     :target: https://travis-ci.org/johnbachman/paths_graph
-
 .. image:: https://coveralls.io/repos/github/johnbachman/paths_graph/badge.svg?branch=master
-:target: https://coveralls.io/github/johnbachman/paths_graph?branch=master
+    :target: https://coveralls.io/github/johnbachman/paths_graph?branch=master
 
 A graph-based representation of path ensembles in directed graphs.
 
