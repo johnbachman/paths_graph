@@ -2,7 +2,7 @@ language: python
 python:
   - "3.6"
 before_install:
-  - pip install numpy networkx==1.11
+  - pip install numpy networkx==1.11 coverage python-coveralls
 script:
   - export TEST_FLAG='True'
   - nosetests paths_graph -v
