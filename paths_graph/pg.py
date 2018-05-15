@@ -95,6 +95,31 @@ def get_reachable_sets(g, source, target, max_depth=10, signed=False):
 
 
 class PathsGraph(object):
+    """Class representing the Paths Graph data structure.
+
+    Instances of this class should generally not be created using the
+    `__init__` method but rather through the factory class method
+    :py:meth:`from_graph`.
+
+    Attributes
+    ----------
+    source_name : str or tuple
+        String or tuple representing the source.
+    source_node : tuple
+        The source node as it is represented in the paths graph.
+    target_name : str or tuple
+        String or tuple representing the target.
+    target_node : tuple
+        The target node as it is represented in the paths graph.
+    target_polarity : int
+        Integer representing the sign of the desired paths at the target
+        node. 0 indicates a positive (even) polarity, 1 indicates a negative
+        (odd) polarity.
+    graph : networkx.DiGraph
+        Graph object representing the paths graph.
+    path_length : int
+        Length of the path connecting source and target.
+    """
     def __init__(self, source_name, target_name, graph, path_length, signed,
                  target_polarity):
         self.source_name = source_name
@@ -482,6 +507,19 @@ class CombinedPathsGraph(object):
                               None, pg.signed, pg.target_polarity)
 
     def sample_paths(self, num_samples):
+        """Sample paths from the combined paths graph.
+
+        Parameters
+        ----------
+        num_samples : int
+            The number of paths to sample.
+
+        Returns
+        -------
+        list of tuples
+            Each item in the list is a tuple of strings representing a path.
+            Note that the paths may not be unique.
+        """
         return self._pg.sample_paths(num_samples=num_samples)
 
 
