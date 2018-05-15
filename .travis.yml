@@ -5,7 +5,9 @@ before_install:
   - pip install numpy networkx==1.11
 script:
   - export TEST_FLAG='True'
-  - nosetests paths_graph -v -a
+  - pwd
+  - nosetests
+  - nosetests paths_graph -v
         --with-coverage --cover-inclusive --cover-package=paths_graph
         --with-doctest
 after_success:
