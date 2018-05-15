@@ -4,7 +4,7 @@ from copy import copy, deepcopy
 import numpy as np
 import networkx as nx
 from .pg import PathsGraph, PathSamplingException
-from indra import has_config
+
 
 logger = logging.getLogger('pre_cfpg')
 
@@ -48,7 +48,7 @@ class PreCFPG(PathsGraph):
     ----------
     pg : PathsGraph
         "Raw" (contains cycles) paths graph as created by
-        :py:func:`indra.explanation.paths_graph.PathsGraph.from_graph`.
+        :py:func:`paths_graph.PathsGraph.from_graph`.
     graph : networkx.DiGraph
         The graph structure of the pre-CFPG.
     tags : dict
@@ -129,7 +129,7 @@ class PreCFPG(PathsGraph):
         ----------
         pg : PathsGraph
             "Raw" (contains cycles) paths graph as created by
-            :py:func:`indra.explanation.paths_graph.PathsGraph.from_graph`.
+            :py:func:`paths_graph.PathsGraph.from_graph`.
 
         Returns
         -------
@@ -245,7 +245,7 @@ class PreCFPG(PathsGraph):
         if not out_edges:
             raise PathSamplingException("No cycle-free successors")
         # For determinism in testing
-        if has_config('TEST_FLAG'):
+        if 'TEST_FLAG' in os.environ:
             out_edges.sort()
         weights = [t[2]['weight'] for t in out_edges]
         # Normalize the weights to a proper probability distribution
@@ -261,7 +261,7 @@ def _initialize_pre_cfpg(pg):
     ----------
     pg : PathsGraph
         "Raw" (contains cycles) paths graph as created by
-        :py:func:`indra.explanation.paths_graph.paths_graph`.
+        :py:func:`paths_graph.paths_graph`.
     source_node : tuple
         Source node, of the form (0, source_name).
     target_node : tuple

@@ -140,7 +140,7 @@ class CFPG(PathsGraph):
         ----------
         pg : PathsGraph
             "Raw" (contains cycles) paths graph as created by
-            :py:func:`indra.explanation.paths_graph.PathsGraph.from_graph`.
+            :py:func:`paths_graph.PathsGraph.from_graph`.
 
         Returns
         -------

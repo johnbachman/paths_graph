@@ -1,10 +1,9 @@
 import os
+import logging
 import itertools
 import numpy as np
-import networkx as nx
-from indra import logging
 from collections import defaultdict
-from indra import has_config
+import networkx as nx
 
 logger = logging.getLogger('paths_graph')
 
@@ -437,7 +436,7 @@ class PathsGraph(object):
     def _successor(self, path, node):
         out_edges = self.graph.out_edges(node, data=True)
         # For determinism in testing
-        if has_config('TEST_FLAG'):
+        if 'TEST_FLAG' in os.environ:
             out_edges.sort()
         weights = [t[2]['weight'] for t in out_edges]
         # Normalize the weights to a proper probability distribution
