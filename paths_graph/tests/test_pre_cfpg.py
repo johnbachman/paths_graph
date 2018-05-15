@@ -5,8 +5,8 @@ from os.path import dirname, join
 import numpy as np
 import networkx as nx
 from nose.tools import raises
-from indra.explanation import paths_graph as pg
-from indra.explanation.paths_graph import pre_cfpg as pcf
+import paths_graph as pg
+from paths_graph import pre_cfpg as pcf
 
 
 g1_uns = nx.DiGraph()

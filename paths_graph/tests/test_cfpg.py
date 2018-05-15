@@ -4,7 +4,7 @@ from collections import Counter
 from os.path import dirname, join
 import numpy as np
 import networkx as nx
-from indra.explanation import paths_graph as pg
+import paths_graph as pg
 
 random_graph_pkl = join(dirname(__file__), 'random_graphs.pkl')
 
