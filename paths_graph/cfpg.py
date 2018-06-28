@@ -4,8 +4,9 @@ import itertools
 from collections import Counter
 import numpy as np
 import networkx as nx
-from .pg import PathsGraph
-from .pre_cfpg import PreCFPG, prune
+from paths_graph import PathsGraph
+from paths_graph.pre_cfpg import PreCFPG
+import pickle
 
 
 logger = logging.getLogger('cfpg')
@@ -33,7 +34,7 @@ class CFPG(PathsGraph):
     These 3 conditions will ensure that we can sample paths in the original
     graph faithfully by sampling paths in G_cf. We can also perform graph
     theoretic operations on G_cf to simulate useful operations on the set of
-    paths in the original graph.
+    paths of interest in the original graph.
 
     The starting point is the paths graph (pg_raw below) that represents "all"
     paths (cycle free or not) of the given fixed length from source to target.
@@ -129,8 +130,9 @@ class CFPG(PathsGraph):
             Instance of CFPG class representing cycle-free paths from source to
             target with a given length and overall polarity.
         """
-        pre_cfpg = PreCFPG.from_graph(*args, **kwargs)
-        return klass.from_pre_cfpg(pre_cfpg)
+        #pre_cfpg = PreCFPG.from_graph(*args, **kwargs)
+        pg = PathsGraph.from_graph(*args, **kwargs)
+        return klass.from_pg(pg)
 
     @classmethod
     def from_pg(klass, pg):
@@ -140,7 +142,7 @@ class CFPG(PathsGraph):
         ----------
         pg : PathsGraph
             "Raw" (contains cycles) paths graph as created by
-            :py:func:`paths_graph.PathsGraph.from_graph`.
+            :py:func:`indra.explanation.paths_graph.PathsGraph.from_graph`.
 
         Returns
         -------
@@ -148,8 +150,97 @@ class CFPG(PathsGraph):
             Instance of CFPG class representing cycle-free paths from source to
             target with a given length and overall polarity.
         """
-        pre_cfpg = PreCFPG.from_pg(pg)
-        return klass.from_pre_cfpg(pre_cfpg)
+        source_name = pg.source_name
+        target_name = pg.target_name
+        path_length = pg.path_length
+        src_2node = pg.source_node # 2-tuple version of source
+        src_3node = pg.source_node + (0,) # 3-tuple version of source
+        tgt_2node = pg.target_node # 2-tuple version of target
+        tgt_3node = pg.target_node + (0,) # 3-tuple version of target
+        if not pg.graph:
+            return CFPG(pg.source_name, pg.source_node + (0,),
+                        pg.target_name, pg.target_node + (0,),
+                        pg.path_length, nx.DiGraph())
+        pg_raw = pg.graph
+        ntp_0 = [v for v in pg_raw.nodes()
+                 if (v != src_2node and v[1] == src_2node[1]) or
+                    (v != tgt_2node and v[1] == tgt_2node[1])]
+        """ For the negative polarity case ntp_0 should be defined as:
+            ntp_0 = [v for v in pg_raw.nodes() if (v != src_2node and v[1][0] == src_2node[1][0]) or (v != tgt_2node and v[1] == tgt_2node[1][0])]
+        """
+        if ntp_0 == []:
+            pg_0 = pg_raw
+        else:
+            pg_0 = prune(pg_raw, ntp_0, src_2node, tgt_2node)
+        if not pg_0:
+            return CFPG(pg.source_name, pg.source_node + (0,),
+                        pg.target_name, pg.target_node + (0,),
+                        pg.path_length, nx.DiGraph())
+
+        past = get_past(src_2node,tgt_2node, pg_0)
+        next_tgt = {tgt_3node: []}
+        pred_tgt = {tgt_3node: pg_0.predecessors(tgt_2node)}
+        past_tgt = past[tgt_2node]
+        t_cf_tgt = {tgt_3node: past_tgt}
+        dic_CF = {path_length: ([tgt_3node], next_tgt, pred_tgt, t_cf_tgt)}
+        for i in reversed(range(1, path_length)):
+            V_ip1, next_ip1, pred_ip1, t_cf_ip1 = dic_CF[i+1]
+            assert V_ip1 != []
+            V_current = []
+            for v in V_ip1:
+                V_current.extend(pred_ip1[v])
+                V_current = list(set(V_current))
+            assert V_current != []
+            V_i = []
+            next_i = {}
+            pred_i = {}
+            t_cf_i = {}
+        # Now comes the heart of the construction. We take a node x in
+        # V_current and split it into -in general- multiple copies to ensure
+        # that if (u,v) is an edge in G_cf then the set of tags of u is
+        # included in the set of tags of v
+            for x in V_current:
+                past_x = past[x]
+                pg_x = pg_0.subgraph(past_x)
+                ntp_x = [v for v in past_x if v != x and v[1] == x[1]]
+                """
+                For the negative polarity case the above should be:
+                ntp_x = [v for v in past_x if v != x and v[1][0] == x[1][0]]
+                
+                """
+                if ntp_x == []:
+                    tags_x = pg_x.nodes()
+                else:
+                    pg_x_pruned = prune(pg_x, ntp_x, src_2node, x)
+                    if x not in pg_x_pruned or src_2node not in nx.ancestors(pg_x_pruned, x):
+                        continue
+                    tags_x = pg_x_pruned.nodes()
+                X_ip1 = [w for w in V_ip1 if x in pred_ip1[w]]
+                X_im1 = pg_0.predecessors(x)
+                assert X_ip1 != []
+                V_x, next_x, pred_x, t_cf_x = \
+                         _split_graph(src_2node, tgt_2node, x,  X_ip1, X_im1, t_cf_ip1, tags_x, pg_0)
+                V_i.extend(V_x)
+                next_i.update(next_x)
+                pred_i.update(pred_x)
+                t_cf_i.update(t_cf_x)
+            dic_CF[i] = (V_i, next_i, pred_i, t_cf_i)
+        V_1 = dic_CF[1][0]
+        V_0 = [src_3node]
+        next_src = {src_3node: V_1}
+        pred_src = {src_3node: []}
+        t_cf_src = {src_3node: [src_2node]}
+        dic_CF[0] = (V_0, next_src, pred_src, t_cf_src)
+        G_cf = _dic_to_graph(dic_CF, pg)
+        
+    # Prune out possible unreachable nodes in G_cf
+        nodes_prune = [v for v in G_cf if (v != tgt_3node and G_cf.successors(v) == []) or
+                        (v != src_3node and G_cf.predecessors(v) == [])]
+        G_cf_pruned = prune(G_cf, nodes_prune, src_3node, tgt_3node)
+
+        return klass(pg.source_name, pg.source_node + (0,),
+                     pg.target_name, pg.target_node + (0,),
+                     pg.path_length, G_cf_pruned)
 
     @classmethod
     def from_pre_cfpg(klass, pre_cfpg):
@@ -250,7 +341,7 @@ class CFPG(PathsGraph):
                 # by the _split_graph function, below.
                 V_x, next_x, pred_x, t_cf_x = \
                         _split_graph(src_2node, tgt_2node, x, X_ip1, X_im1,
-                                     t_cf_ip1, pre_cfpg)
+                                     t_cf_ip1, pre_cfpg.tags[x], pre_cfpg.graph)
                 # We now extend V_i, next_i, pred_i and t_i in the obvious way.
                 V_i.extend(V_x) # V_x contains the new, split versions of x
                 next_i.update(next_x)
@@ -354,8 +445,69 @@ class CombinedCFPG(object):
         next_nodes = nodes_by_name[next_name]
         return (next_name, next_nodes)
 
+def prune(g, nodes_to_prune, source, target):
+    """Iteratively prunes nodes from a copy of the paths graph.
 
-def _split_graph(src, tgt, x,  X_ip1, X_im1, t_cf, pre_cfpg):
+    We prune the graph *pg* iteratively by the following procedure:
+      1. Remove the nodes given by *nodes_to_prune* from the graph.
+      2. Identify nodes (other than the source node) that now have no
+         incoming edges.
+      3. Identify nodes (other than the target node) that now have no outgoing
+         edges.
+      4. Set *nodes_to_prune* to the nodes identified in steps 2 and 3.
+      5. Repeat from 1 until there are no more nodes to prune.
+
+    Parameters
+    ----------
+    pg : networkx.DiGraph
+        Paths graph to prune.
+    nodes_to_prune : list
+        Nodes to prune from paths graph.
+    source : tuple
+        Source node, of the form (0, source_name).
+    target : tuple
+        Target node, of the form (target_depth, source_name).
+
+    Returns
+    -------
+    networkx.DiGraph()
+        Pruned paths graph.
+    """
+    # First check if we are pruning any nodes to prevent unnecessary copying
+    # of the paths graph
+    if not nodes_to_prune:
+        return g
+    # Make a copy of the graph
+    g_pruned = g.copy()
+    # Perform iterative pruning
+    while nodes_to_prune:
+        # Remove the nodes in our pruning list
+        g_pruned.remove_nodes_from(nodes_to_prune)
+        # Make a list of nodes whose in or out degree is now 0 (making
+        # sure to exclude the source and target, whose depths are at 0 and
+        # path_length, respectively)
+        no_in_edges = [node for node, in_deg in g_pruned.in_degree_iter()
+                        if in_deg == 0 and node != source]
+        no_out_edges = [node for node, out_deg in g_pruned.out_degree_iter()
+                        if out_deg == 0 and node != target]
+        nodes_to_prune = set(no_in_edges + no_out_edges)
+    return g_pruned
+
+
+def get_past(src, tgt, pg_0):
+    past = {src: [src]}
+    for i in range(1, tgt[0] + 1):
+        W_i = [w for w in pg_0.nodes() if w[0] == i]
+        for w in W_i:
+            past_w = [w]
+            for u in pg_0.predecessors(w):
+                past_w.extend(past[u])
+            past_w = list(set(past_w))
+            past[w] = past_w
+    return past
+
+
+def _split_graph(src, tgt, x,  X_ip1, X_im1, t_cf, tags_x, g):
     """Splits a node x from G_0 into multiple copies for the CFPG.
 
     The nodes in X_ip1 represent the possible successor nodes to x in the CFPG.
@@ -374,13 +526,13 @@ def _split_graph(src, tgt, x,  X_ip1, X_im1, t_cf, pre_cfpg):
     t_x = {}
     S_ip1 = {}
     for w in X_ip1:
-        X_wx =  set(t_cf[w]) & set(pre_cfpg.tags[x])
+        X_wx =  set(t_cf[w]) & set(tags_x)
         N_wx = list(X_wx)
         # TODO: Reimplement pruning so as to avoid inducing a subgraph?
-        g_wx = pre_cfpg.graph.subgraph(N_wx)
+        g_wx = g.subgraph(N_wx)
         nodes_prune = [v for v in g_wx
                          if (v != x and g_wx.successors(v) == []) or
-                            (v != src and g_wx.predecessors(v) == [])]
+                            (v!= src and g_wx.predecessors(v) == [])]
         g_wx_pruned = prune(g_wx, nodes_prune, src, x)
         # If the pruned graph still contains both src and x itself, there is
         # at least one path from the source to x->w. The nodes in this subgraph
@@ -396,7 +548,7 @@ def _split_graph(src, tgt, x,  X_ip1, X_im1, t_cf, pre_cfpg):
     # are assembled using S_ip1; pred is defined in the expected way using
     # X_im1.
     for c, r in enumerate(S):
-        x_c = (x[0], x[1], r) # Identify the node with its history, r
+        x_c = (x[0], x[1], r)
         V_x.append(x_c)
         next_x[x_c] = [w for w in S_ip1.keys() if r == S_ip1[w]]
         pred_x[x_c] = [u for u in X_im1 if u in r]
@@ -404,8 +556,22 @@ def _split_graph(src, tgt, x,  X_ip1, X_im1, t_cf, pre_cfpg):
     return (V_x, next_x, pred_x, t_x)
 
 
-def _dic_to_graph(dic, pre_cfpg):
-    """Create a graph from the dict, adding edge weights from the pre-CFPG."""
+"""
+def _dic_to_graph_pg(dic):
+    G = nx.DiGraph()
+    E = []
+    for k in dic.keys():
+        V_k = dic[k][0]
+        next_k = dic[k][1]
+        for v in V_k:
+            E_v = list(itertools.product([v], next_k[v]))
+            E.extend(E_v)
+    G.add_edges_from(E)
+    return G
+"""
+
+def _dic_to_graph(dic, pg):
+    """Create a graph from the dict"""
     G = nx.DiGraph()
     E = []
     for k in dic.keys():
@@ -413,7 +579,7 @@ def _dic_to_graph(dic, pre_cfpg):
         next_k = dic[k][1]
         for v in V_k:
             for u, v in itertools.product([v], next_k[v]):
-                weight = pre_cfpg.graph[u[0:2]][v[0:2]]['weight']
+                weight = pg.graph[u[0:2]][v[0:2]]['weight']
                 E.append((u, v, {'weight': weight}))
     G.add_edges_from(E)
     return G
