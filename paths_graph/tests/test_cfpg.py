@@ -285,3 +285,17 @@ def test_combine_cfpgs():
     path_ctr = Counter(paths)
 
 
+def test_problem_graph():
+    g = nx.DiGraph()
+    g.add_edges_from([
+        (0, 1), (0, 4), (0, 5), (1, 0), (1, 4), (1, 5), (2, 1), (2, 4), (2, 5),
+        (3, 1), (3, 5), (4, 0), (4, 3), (4, 5), (5, 0), (5, 1), (5, 2), (5, 3),
+        (5, 4)])
+    cfpg = pg.CFPG.from_graph(g, 0, 5, 5)
+    nx_paths_5 = tuple([p for p in nx.all_simple_paths(g, 0, 5) if len(p) == 6])
+    cfpg_paths = cfpg.enumerate_paths()
+    assert nx_paths_5 == cfpg_paths
+
+
+if __name__ == '__main__':
+    test_problem_graph()

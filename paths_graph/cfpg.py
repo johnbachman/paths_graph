@@ -185,12 +185,12 @@ class CFPG(PathsGraph):
         dic_CF = {path_length: ([tgt_3node], next_tgt, pred_tgt, t_cf_tgt)}
         for i in reversed(range(1, path_length)):
             V_ip1, next_ip1, pred_ip1, t_cf_ip1 = dic_CF[i+1]
-            assert V_ip1 != []
+            #assert V_ip1 != []
             V_current = []
             for v in V_ip1:
                 V_current.extend(pred_ip1[v])
                 V_current = list(set(V_current))
-            assert V_current != []
+            #assert V_current != []
             V_i = []
             next_i = {}
             pred_i = {}
@@ -232,7 +232,7 @@ class CFPG(PathsGraph):
         t_cf_src = {src_3node: [src_2node]}
         dic_CF[0] = (V_0, next_src, pred_src, t_cf_src)
         G_cf = _dic_to_graph(dic_CF, pg)
-        
+
     # Prune out possible unreachable nodes in G_cf
         nodes_prune = [v for v in G_cf if (v != tgt_3node and G_cf.successors(v) == []) or
                         (v != src_3node and G_cf.predecessors(v) == [])]
