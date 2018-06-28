@@ -1,13 +1,11 @@
-from ez_setup import use_setuptools
-use_setuptools()
-from setuptools import setup
 import sys
+from setuptools import setup
 
 def main():
     install_list = ['networkx==1.11', 'numpy']
 
     setup(name='paths_graph',
-          version='0.0.1',
+          version='0.0.2',
           description='Algorithm for analyzing paths in directed graphs.',
           long_description='The Paths Graph is a data structure derived from '
                            'a directed graph that can be used to represent '
