@@ -3,7 +3,7 @@ import logging
 from copy import copy, deepcopy
 import numpy as np
 import networkx as nx
-from .pg import PathsGraph, PathSamplingException
+from paths_graph.pg import PathsGraph, PathSamplingException
 
 
 logger = logging.getLogger('pre_cfpg')
