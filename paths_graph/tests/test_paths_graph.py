@@ -362,7 +362,7 @@ def test_paths_tree_weighted_sampling():
     assert ctr[('A', 'C', 'D')] == 256
 
 
-def test_paths_tree_path_weights():
+def test_paths_tree_path_probabilities():
     source, target = ('source', 'target')
     all_paths = list(nx.all_simple_paths(g_samp, source, target))
     pt = PathsTree(all_paths)
@@ -375,6 +375,11 @@ def test_paths_tree_path_weights():
     assert pw[('source', 'A2', 'B5', 'target')] == 0.125
     total = sum([v for v in pw.values()])
     assert total == 1.
+
+def test_paths_tree_path_probabilities_empty():
+    pt = PathsTree([])
+    pw = pt.path_probabilities()
+    assert pw == {}
 
 """
 def test_sampling_on_random_graphs():
@@ -418,7 +423,4 @@ def test_cf_sampling_backtracking2():
     sample_paths = pg.sample_cf_paths(10)
     assert set(sample_paths) == set([('A', 'B', 'D', 'C', 'F')])
 
-
-if __name__ == '__main__':
-    test_paths_tree_path_weights()
 

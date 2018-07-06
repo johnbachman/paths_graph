@@ -98,6 +98,8 @@ class PathsTree(object):
         dict
             Dictionary mapping paths (as tuples of nodes) to probabilities.
         """
+        if not self.graph:
+            return {}
         root = (tuple(), [1])
         queue = deque([root])
         paths = {}
