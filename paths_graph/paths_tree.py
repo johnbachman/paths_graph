@@ -89,5 +89,8 @@ class PathsTree(object):
             sampled_paths.append(node)
         return sampled_paths
 
+    def path_probabilities(self):
+        return {}
+
 
 

@@ -361,5 +361,58 @@ def test_paths_tree_weighted_sampling():
     assert ctr[('A', 'B', 'D')] == 744
     assert ctr[('A', 'C', 'D')] == 256
 
+
+def test_paths_tree_path_weights():
+    source, target = ('source', 'target')
+    all_paths = list(nx.all_simple_paths(g_samp, source, target))
+    pt = PathsTree(all_paths)
+    pw = pt.path_probabilities()
+    assert isinstance(pw, dict)
+
+
+"""
+def test_sampling_on_random_graphs():
+    # We use 25 randomly generated graphs for testing the algorithm
+    with open(random_graph_pkl, 'rb') as f:
+        rg_dict = pickle.load(f)
+    for i in range(1):
+        G_i, source, target = rg_dict[i]
+        print("graph# %d, %d nodes, %d edges" % (i, len(G_i), len(G_i.edges())))
+        (f_reach, b_reach)  = pg.get_reachable_sets(G_i, source, target,
+                                        max_depth=max_depth, signed=False)
+"""
+
+def test_cf_sampling_backtracking1():
+    g_uns = nx.DiGraph()
+    g_uns.add_edges_from((('A', 'B'), ('A', 'C'), ('C', 'D'), ('B', 'D'),
+                          ('D', 'B'), ('D', 'C'), ('B', 'E'), ('C', 'E')))
+    source = 'A'
+    target = 'E'
+    length = 4
+    pg = PathsGraph.from_graph(g_uns, source, target, length)
+    sample_paths = pg.sample_cf_paths(100)
+    assert set(sample_paths) == set(
+        [('A', 'B', 'D', 'C', 'E'),
+         ('A', 'C', 'D', 'B', 'E'),
+         ])
+
+
+def test_cf_sampling_backtracking2():
+    """Tests if the backtracking list is pruned as it retreats."""
+    g_uns = nx.DiGraph()
+    g_uns.add_edges_from([('A', 'B'), ('A', 'C'),
+                          ('B', 'D'),
+                          ('C', 'D'), ('C', 'E'), ('C', 'F'),
+                          ('D', 'C'),
+                          ('E', 'C')])
+    source = 'A'
+    target = 'F'
+    length = 4
+    pg = PathsGraph.from_graph(g_uns, source, target, length)
+    sample_paths = pg.sample_cf_paths(10)
+    assert set(sample_paths) == set([('A', 'B', 'D', 'C', 'F')])
+
+
 if __name__ == '__main__':
-    test_paths_tree()
+    test_paths_tree_path_weights()
+
