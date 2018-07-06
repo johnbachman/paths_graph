@@ -368,7 +368,13 @@ def test_paths_tree_path_weights():
     pt = PathsTree(all_paths)
     pw = pt.path_probabilities()
     assert isinstance(pw, dict)
-
+    assert pw[('source', 'A1', 'B1', 'target')] == 0.5
+    assert pw[('source', 'A2', 'B2', 'target')] == 0.125
+    assert pw[('source', 'A2', 'B3', 'target')] == 0.125
+    assert pw[('source', 'A2', 'B4', 'target')] == 0.125
+    assert pw[('source', 'A2', 'B5', 'target')] == 0.125
+    total = sum([v for v in pw.values()])
+    assert total == 1.
 
 """
 def test_sampling_on_random_graphs():
