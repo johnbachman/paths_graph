@@ -1,4 +1,5 @@
 import os
+from collections import deque
 import numpy as np
 import networkx as nx
 
@@ -89,5 +90,29 @@ class PathsTree(object):
             sampled_paths.append(node)
         return sampled_paths
 
+    def path_probabilities(self):
+        """Get probability of each path given edge probabilities.
 
-
+        Returns
+        -------
+        dict
+            Dictionary mapping paths (as tuples of nodes) to probabilities.
+        """
+        root = (tuple(), [1])
+        queue = deque([root])
+        paths = {}
+        while queue:
+            current_node, current_prob = queue.popleft()
+            # Get successors of this node with edge weights
+            succ_nodes = []
+            succ_weights = []
+            for succ_node, succ_data in self.graph[current_node].items():
+                succ_nodes.append(succ_node)
+                succ_weights.append(float(succ_data['weight']))
+            # If no successors it's a leaf node (path)
+            if not succ_nodes:
+                paths[current_node] = current_prob
+            # Normalize the weights to a proper probability distribution
+            p = (np.array(succ_weights) / np.sum(succ_weights)) * current_prob
+            queue.extend(zip(succ_nodes, p))
+        return paths
