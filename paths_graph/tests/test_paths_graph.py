@@ -1,4 +1,5 @@
 import os
+import unittest
 from collections import Counter
 import numpy as np
 import networkx as nx
@@ -393,6 +394,7 @@ def test_sampling_on_random_graphs():
                                         max_depth=max_depth, signed=False)
 """
 
+@unittest.skip('sample_cf_paths is not implemented yet')
 def test_cf_sampling_backtracking1():
     g_uns = nx.DiGraph()
     g_uns.add_edges_from((('A', 'B'), ('A', 'C'), ('C', 'D'), ('B', 'D'),
@@ -408,6 +410,7 @@ def test_cf_sampling_backtracking1():
          ])
 
 
+@unittest.skip('sample_cf_paths is not implemented yet')
 def test_cf_sampling_backtracking2():
     """Tests if the backtracking list is pruned as it retreats."""
     g_uns = nx.DiGraph()
