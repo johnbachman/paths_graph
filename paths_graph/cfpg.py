@@ -300,7 +300,7 @@ class CFPG(PathsGraph):
         # We first hardwire the contents of the dictionary for the level of the
         # target node: dic_CF[path_length]
         next_tgt = {tgt_3node: []}
-        pred_tgt = {tgt_3node: pre_cfpg.graph.predecessors(tgt_2node)}
+        pred_tgt = {tgt_3node: list(pre_cfpg.graph.predecessors(tgt_2node))}
         t_cf_tgt = {tgt_3node: pre_cfpg.tags[tgt_2node]}
         dic_CF = {path_length: ([tgt_3node], next_tgt, pred_tgt, t_cf_tgt)}
         logger.info("Creating CFPG from pre-CFPG")

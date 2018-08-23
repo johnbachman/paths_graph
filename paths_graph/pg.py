@@ -390,7 +390,7 @@ class PathsGraph(object):
             weights = np.array(counts) / np.sum(counts)
             for ix, v in enumerate(v_list):
                 weight_dict[(u, v)] = weights[ix]
-        nx.set_edge_attributes(self.graph, 'weight', weight_dict)
+        nx.set_edge_attributes(self.graph, weight_dict, 'weight')
 
     @staticmethod
     def _name_paths(paths):
@@ -459,10 +459,10 @@ class PathsGraph(object):
         return path
 
     def _successor(self, path, node):
-        out_edges = self.graph.out_edges(node, data=True)
+        out_edges = list(self.graph.out_edges(node, data=True))
         # For determinism in testing
         if 'TEST_FLAG' in os.environ:
-            out_edges = sorted(list(out_edges))
+            out_edges = sorted(out_edges)
         weights = [t[2]['weight'] for t in out_edges]
         # Normalize the weights to a proper probability distribution
         p = np.array(weights) / np.sum(weights)
