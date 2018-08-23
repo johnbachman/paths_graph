@@ -273,7 +273,7 @@ class PathsGraph(object):
         g_edges = []
         edge_weights = {}
         # Collect edge and edge weight info from the graph
-        for u, v, data in g.edges_iter(data=True):
+        for u, v, data in g.edges(data=True):
             if signed:
                 edge_key = (u, v, data['sign'])
             else:
