@@ -190,7 +190,10 @@ def test_sampling_graph2():
     pkl_file = join(dirname(__file__), 'dead_end_graph.pkl')
     with open(pkl_file, 'rb') as f:
         graph_dict = pickle.load(f)
-    g, source, target = graph_dict[2]
+    (g_nodes, g_edges), source, target = graph_dict[2]
+    g = nx.DiGraph()
+    g.add_nodes_from(g_nodes)
+    g.add_edges_from(g_edges)
     pre_cfpg = pg.PreCFPG.from_graph(g, source, target, 6)
     cfpg = pg.CFPG.from_pre_cfpg(pre_cfpg)
     # 147 unique paths
