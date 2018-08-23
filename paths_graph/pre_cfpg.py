@@ -246,7 +246,7 @@ class PreCFPG(PathsGraph):
             raise PathSamplingException("No cycle-free successors")
         # For determinism in testing
         if 'TEST_FLAG' in os.environ:
-            out_edges.sort()
+            out_edges = sorted(list(out_edges))
         weights = [t[2]['weight'] for t in out_edges]
         # Normalize the weights to a proper probability distribution
         p = np.array(weights) / np.sum(weights)
