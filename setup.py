@@ -2,7 +2,7 @@ import sys
 from setuptools import setup
 
 def main():
-    install_list = ['networkx==1.11', 'numpy']
+    install_list = ['networkx', 'numpy']
 
     setup(name='paths_graph',
           version='0.0.2',

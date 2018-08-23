@@ -179,7 +179,7 @@ class CFPG(PathsGraph):
 
         past = get_past(src_2node,tgt_2node, pg_0)
         next_tgt = {tgt_3node: []}
-        pred_tgt = {tgt_3node: pg_0.predecessors(tgt_2node)}
+        pred_tgt = {tgt_3node: list(pg_0.predecessors(tgt_2node))}
         past_tgt = past[tgt_2node]
         t_cf_tgt = {tgt_3node: past_tgt}
         dic_CF = {path_length: ([tgt_3node], next_tgt, pred_tgt, t_cf_tgt)}
@@ -216,7 +216,7 @@ class CFPG(PathsGraph):
                         continue
                     tags_x = pg_x_pruned.nodes()
                 X_ip1 = [w for w in V_ip1 if x in pred_ip1[w]]
-                X_im1 = pg_0.predecessors(x)
+                X_im1 = list(pg_0.predecessors(x))
                 assert X_ip1 != []
                 V_x, next_x, pred_x, t_cf_x = \
                          _split_graph(src_2node, tgt_2node, x,  X_ip1, X_im1, t_cf_ip1, tags_x, pg_0)
@@ -234,8 +234,8 @@ class CFPG(PathsGraph):
         G_cf = _dic_to_graph(dic_CF, pg)
 
     # Prune out possible unreachable nodes in G_cf
-        nodes_prune = [v for v in G_cf if (v != tgt_3node and G_cf.successors(v) == []) or
-                        (v != src_3node and G_cf.predecessors(v) == [])]
+        nodes_prune = [v for v in G_cf if (v != tgt_3node and not G_cf.successors(v)) or
+                        (v != src_3node and not G_cf.predecessors(v))]
         G_cf_pruned = prune(G_cf, nodes_prune, src_3node, tgt_3node)
 
         return klass(pg.source_name, pg.source_node + (0,),
@@ -334,7 +334,7 @@ class CFPG(PathsGraph):
                 # processed, will be 3-tuples. X_im1 are the set of predecessor
                 # nodes of x at the level i-1. They are unprocessed 2-tuples.
                 X_ip1 = [w for w in V_ip1 if x in pred_ip1[w]]
-                X_im1 = pre_cfpg.graph.predecessors(x)
+                X_im1 = list(pre_cfpg.graph.predecessors(x))
                 assert X_ip1 != []
                 # The actual splitting of node x and connect the resulting
                 # copies of x to its neighbors above and below is carried out
@@ -358,8 +358,8 @@ class CFPG(PathsGraph):
         G_cf = _dic_to_graph(dic_CF, pre_cfpg)
         # Prune out possible unreachable nodes in G_cf
         nodes_prune = [v for v in G_cf
-                         if (v != tgt_3node and G_cf.successors(v) == []) or
-                            (v != src_3node and G_cf.predecessors(v) == [])]
+                         if (v != tgt_3node and not G_cf.successors(v)) or
+                            (v != src_3node and not G_cf.predecessors(v))]
         G_cf_pruned = prune(G_cf, nodes_prune, src_3node, tgt_3node)
         return klass(pre_cfpg.source_name, pre_cfpg.source_node + (0,),
                      pre_cfpg.target_name, pre_cfpg.target_node + (0,),
@@ -486,9 +486,9 @@ def prune(g, nodes_to_prune, source, target):
         # Make a list of nodes whose in or out degree is now 0 (making
         # sure to exclude the source and target, whose depths are at 0 and
         # path_length, respectively)
-        no_in_edges = [node for node, in_deg in g_pruned.in_degree_iter()
+        no_in_edges = [node for node, in_deg in g_pruned.in_degree()
                         if in_deg == 0 and node != source]
-        no_out_edges = [node for node, out_deg in g_pruned.out_degree_iter()
+        no_out_edges = [node for node, out_deg in g_pruned.out_degree()
                         if out_deg == 0 and node != target]
         nodes_to_prune = set(no_in_edges + no_out_edges)
     return g_pruned
@@ -531,8 +531,8 @@ def _split_graph(src, tgt, x,  X_ip1, X_im1, t_cf, tags_x, g):
         # TODO: Reimplement pruning so as to avoid inducing a subgraph?
         g_wx = g.subgraph(N_wx)
         nodes_prune = [v for v in g_wx
-                         if (v != x and g_wx.successors(v) == []) or
-                            (v!= src and g_wx.predecessors(v) == [])]
+                         if (v != x and not g_wx.successors(v)) or
+                            (v!= src and not g_wx.predecessors(v))]
         g_wx_pruned = prune(g_wx, nodes_prune, src, x)
         # If the pruned graph still contains both src and x itself, there is
         # at least one path from the source to x->w. The nodes in this subgraph

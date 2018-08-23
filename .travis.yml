@@ -4,7 +4,7 @@ python:
   - "3.5"
   - "3.6"
 before_install:
-  - pip install numpy networkx==1.11 coverage python-coveralls
+  - pip install numpy networkx coverage python-coveralls
 script:
   - export TEST_FLAG='True'
   - nosetests paths_graph -v
