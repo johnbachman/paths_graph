@@ -390,7 +390,7 @@ class PathsGraph(object):
             weights = np.array(counts) / np.sum(counts)
             for ix, v in enumerate(v_list):
                 weight_dict[(u, v)] = weights[ix]
-        nx.set_edge_attributes(self.graph, weight_dict, 'weight')
+        nx.set_edge_attributes(self.graph, name='weight', values=weight_dict)
 
     @staticmethod
     def _name_paths(paths):
