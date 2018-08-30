@@ -70,14 +70,14 @@ class PathsTree(object):
             # The root of the tree should be the empty tuple
             node = tuple()
             while True:
-                out_edges = self.graph.out_edges(node, data=True)
+                out_edges = list(self.graph.out_edges(node, data=True))
                 # If there are no successors to the current node, then we've
                 # hit a leaf of the tree and have found a path
                 if not out_edges:
                     break
                 # For determinism in testing, sort the out edges
                 if 'TEST_FLAG' in os.environ:
-                    out_edges.sort()
+                    out_edges = sorted(list(out_edges))
                 # The float is necessary here for Python 2 compatibility
                 weights = [float(t[2]['weight']) for t in out_edges]
                 # Normalize the weights to a proper probability distribution

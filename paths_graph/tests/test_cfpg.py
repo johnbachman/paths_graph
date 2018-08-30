@@ -6,7 +6,7 @@ import numpy as np
 import networkx as nx
 import paths_graph as pg
 
-random_graph_pkl = join(dirname(__file__), 'random_graphs.pkl')
+random_graph_pkl = join(dirname(__file__), 'random_graphs_edges.pkl')
 
 g_uns = nx.DiGraph()
 g_uns.add_edges_from((('A', 'B'), ('A', 'C'), ('C', 'D'), ('B', 'D'),
@@ -88,8 +88,11 @@ def test_on_random_graphs():
     min_depth = 5
     max_depth = 10
     for i in range(1):
-        G_i, source, target = rg_dict[i]
-        print("graph# %d, %d nodes, %d edges" % (i, len(G_i), len(G_i.edges())))
+        edges, source, target = rg_dict[i]
+        G_i = nx.DiGraph()
+        G_i.add_edges_from(edges)
+        print("graph# %d, %d nodes, %d edges" % (i, len(G_i.nodes()),
+                                                 len(G_i.edges())))
         (f_reach, b_reach)  = pg.get_reachable_sets(G_i, source, target,
                                         max_depth=max_depth, signed=False)
         # Try different path lengths
