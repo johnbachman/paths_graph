@@ -522,6 +522,12 @@ class CombinedPathsGraph(object):
         """
         return self._pg.sample_paths(num_samples=num_samples)
 
+    def count_paths(self):
+        total_paths = 0
+        for pg in self.pg_list:
+            total_paths += pg.count_paths()
+        return total_paths
+
 
 def _check_reach_depth(dir_name, reachset, length):
     depth = max(reachset.keys())
