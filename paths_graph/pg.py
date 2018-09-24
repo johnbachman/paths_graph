@@ -258,11 +258,12 @@ class PathsGraph(object):
         # Next we calculate the subset of nodes at each level that are reachable
         # from both the forward and backward directions. Because the polarities
         # have already been set appropriately, we can do this with a simple
-        # set intersection.
+        # set intersection. We also make sure that the target doesn't reappear
+        # anywhere except at the correct level.
         for i in range(1, length):
             f_reach_set = fwd_reachset[i]
             b_reach_set = back_reachset_adj[length - i]
-            path_nodes = set(f_reach_set) & set(b_reach_set)
+            path_nodes = set(f_reach_set) & set(b_reach_set) - set([target])
             level[i] = path_nodes
         # Next we explicitly enumerate the path graph nodes by tagging each node
         # with its level in the path
@@ -552,7 +553,7 @@ class PathsGraph(object):
             path = [self.source_node]
             current = self.source_node
             # while we haven't reached the target...
-            while current != self.target_node:
+            while current[1] != self.target_name:
                 # ...enumerate the allowable successors for this node
                 next = _successor_blacklist(path, current)
                 # If next is None, this means that there were no
@@ -677,6 +678,13 @@ class CombinedPathsGraph(object):
         total_paths = 0
         for pg in self.pg_list:
             total_paths += pg.count_paths()
+        return total_paths
+
+    def count_cf_paths(self):
+        total_paths = 0
+        for pg in self.pg_list:
+            if pg.graph:
+                total_paths += pg.count_cf_paths()
         return total_paths
 
     def sample_cf_paths(self, num_samples):
