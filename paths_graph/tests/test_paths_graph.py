@@ -461,20 +461,11 @@ def test_cf_path_count():
     target = 'F'
     length = 4
     pg = PathsGraph.from_graph(g_uns, source, target, length)
-    sample_paths = pg.sample_cf_paths(20)
+    sample_paths = pg.sample_cf_paths(30)
     assert set(sample_paths) == set([('A', 'B', 'D', 'C', 'F'),
                                      ('A', 'C', 'E', 'G', 'F')])
-    total_path_counts = pg._get_path_counts()
-    cf_counts = pg._get_cf_path_counts(total_path_counts)
-    assert cf_counts == {
-        (0, 'A'): 2,
-        (1, 'B'): 1,
-        (1, 'C'): 1,
-        (2, 'D'): 1,
-        (2, 'E'): 1,
-        (3, 'C'): 1,
-        (3, 'G'): 1,
-        (4, 'F'): 1}
+    cf_count = pg.count_cf_paths()
+    assert cf_count == 2
 
 
 def test_cf_path_count_random():
@@ -494,8 +485,8 @@ def test_cf_path_count_random():
                              if len(p) == length+1]
     simple_path_count = len(simple_paths)
     cf_paths = pg.sample_cf_paths(1000)
-    total_path_counts = pg._get_path_counts()
-    cf_counts = pg._get_cf_path_counts(total_path_counts)
-    assert cf_counts[pg.source_node] == simple_path_count
+    cf_count = pg.count_cf_paths()
+    assert cf_count == simple_path_count
     assert set(simple_paths) == set(cf_paths)
+
 
