@@ -1,9 +1,11 @@
 import os
-import unittest
+import pickle
 from collections import Counter
 import numpy as np
 import networkx as nx
 from paths_graph import *
+
+#random_graph_pkl = join(dirname(__file__), 'random_graphs.pkl')
 
 source = 'A'
 target = 'D'
@@ -394,7 +396,6 @@ def test_sampling_on_random_graphs():
                                         max_depth=max_depth, signed=False)
 """
 
-@unittest.skip('sample_cf_paths is not implemented yet')
 def test_cf_sampling_backtracking1():
     g_uns = nx.DiGraph()
     g_uns.add_edges_from((('A', 'B'), ('A', 'C'), ('C', 'D'), ('B', 'D'),
@@ -410,7 +411,6 @@ def test_cf_sampling_backtracking1():
          ])
 
 
-@unittest.skip('sample_cf_paths is not implemented yet')
 def test_cf_sampling_backtracking2():
     """Tests if the backtracking list is pruned as it retreats."""
     g_uns = nx.DiGraph()
@@ -425,5 +425,68 @@ def test_cf_sampling_backtracking2():
     pg = PathsGraph.from_graph(g_uns, source, target, length)
     sample_paths = pg.sample_cf_paths(10)
     assert set(sample_paths) == set([('A', 'B', 'D', 'C', 'F')])
+
+def test_cf_sampling_signed():
+    g_uns = nx.DiGraph()
+    g_uns.add_edges_from([
+        ('A', 'B', {'sign': 1}),
+        ('A', 'C', {'sign': 0}),
+        ('C', 'D', {'sign': 0}),
+        ('B', 'D', {'sign': 0}),
+        ('D', 'B', {'sign': 0}),
+        ('D', 'C', {'sign': 0}),
+        ('B', 'E', {'sign': 0}),
+        ('C', 'E', {'sign': 0})])
+    source = 'A'
+    target = 'E'
+    length = 4
+    target_polarity = 1
+    pg = PathsGraph.from_graph(g_uns, source, target, length, signed=True,
+                               target_polarity=target_polarity)
+    sample_paths = pg.sample_cf_paths(10)
+    assert set(sample_paths) == {(('A', 0), ('B', 1), ('D', 1),
+                                  ('C', 1), ('E', 1))}
+
+
+def test_cf_path_count():
+    """Tests if the cycle-free path count is updated from the blacklist."""
+    g_uns = nx.DiGraph()
+    g_uns.add_edges_from([('A', 'B'), ('A', 'C'),
+                          ('B', 'D'),
+                          ('C', 'D'), ('C', 'E'), ('C', 'F'),
+                          ('D', 'C'),
+                          ('E', 'C'), ('E', 'G'),
+                          ('G', 'F')])
+    source = 'A'
+    target = 'F'
+    length = 4
+    pg = PathsGraph.from_graph(g_uns, source, target, length)
+    sample_paths = pg.sample_cf_paths(30)
+    assert set(sample_paths) == set([('A', 'B', 'D', 'C', 'F'),
+                                     ('A', 'C', 'E', 'G', 'F')])
+    cf_count = pg.count_cf_paths()
+    assert cf_count == 2
+
+
+def test_cf_path_count_random():
+    num_nodes = 10
+    length = 6
+    #g = nx.erdos_renyi_graph(num_nodes, 0.5, directed=True)
+    g = nx.DiGraph()
+    g.add_edges_from([(0, 1), (0, 2), (0, 3), (0, 7), (1, 0), (1, 3), (1, 8),
+        (1, 9), (3, 0), (3, 1), (3, 2), (3, 4), (3, 5), (3, 6), (3, 7), (3, 9),
+        (4, 0), (4, 1), (4, 2), (4, 6), (4, 7), (5, 2), (5, 4), (5, 6), (5, 7),
+        (6, 0), (6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 7), (6, 9), (7, 4),
+        (7, 5), (7, 8), (8, 2), (8, 6), (9, 0), (9, 5), (9, 6), (9, 8)])
+    source = 0
+    target = num_nodes - 1
+    pg = PathsGraph.from_graph(g, source, target, length)
+    simple_paths = [tuple(p) for p in nx.all_simple_paths(g, source, target)
+                             if len(p) == length+1]
+    simple_path_count = len(simple_paths)
+    cf_paths = pg.sample_cf_paths(1000)
+    cf_count = pg.count_cf_paths()
+    assert cf_count == simple_path_count
+    assert set(simple_paths) == set(cf_paths)
 
 
