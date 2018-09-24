@@ -69,3 +69,10 @@ performed to represent sets of paths under a variety of constraints: for
 example, given a CFPG representing paths passing through a node u, and another
 representing paths avoiding a different node v, a CFPG can be easily computed
 to represent the cycle-free paths from S to T that pass through u but avoid v.
+
+Updating on PyPI
+----------------
+* Update the version number in setup.py
+* python setup.py sdist
+* python setup.py sdist upload
+
