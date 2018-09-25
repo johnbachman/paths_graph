@@ -5,7 +5,7 @@ def main():
     install_list = ['networkx', 'numpy']
 
     setup(name='paths_graph',
-          version='0.0.3',
+          version='0.0.4',
           description='Algorithm for analyzing paths in directed graphs.',
           long_description='The Paths Graph is a data structure derived from '
                            'a directed graph that can be used to represent '
