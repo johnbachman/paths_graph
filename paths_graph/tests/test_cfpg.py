@@ -300,5 +300,20 @@ def test_problem_graph():
     assert nx_paths_5 == cfpg_paths
 
 
-if __name__ == '__main__':
-    test_problem_graph()
+def test_pruning_src_tgt():
+    """Test for graceful handling of networks where src or tgt nodes are pruned.
+    """
+    g = nx.DiGraph()
+
+    g.add_edges_from([(0, 1), (0, 2), (0, 3), (0, 4), (1, 0), (2, 0), (2, 1),
+        (2, 3), (3, 0), (3, 2), (3, 4), (3, 5), (4, 1), (4, 3), (4, 5), (5, 0),
+        (5, 2)])
+    src = 0
+    tgt = 5
+    length = 5
+    cfpg = pg.CFPG.from_graph(g, src, tgt, length)
+    cfpg_paths = cfpg.sample_paths(100)
+    nx_paths = set([p for p in nx.all_simple_paths(g, src, tgt)
+                    if len(p) - 1 == length])
+    assert set(cfpg_paths) == nx_paths
+

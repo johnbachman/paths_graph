@@ -195,10 +195,10 @@ class CFPG(PathsGraph):
             next_i = {}
             pred_i = {}
             t_cf_i = {}
-        # Now comes the heart of the construction. We take a node x in
-        # V_current and split it into -in general- multiple copies to ensure
-        # that if (u,v) is an edge in G_cf then the set of tags of u is
-        # included in the set of tags of v
+            # Now comes the heart of the construction. We take a node x in
+            # V_current and split it into -in general- multiple copies to ensure
+            # that if (u,v) is an edge in G_cf then the set of tags of u is
+            # included in the set of tags of v
             for x in V_current:
                 past_x = past[x]
                 pg_x = pg_0.subgraph(past_x)
@@ -206,20 +206,21 @@ class CFPG(PathsGraph):
                 """
                 For the negative polarity case the above should be:
                 ntp_x = [v for v in past_x if v != x and v[1][0] == x[1][0]]
-                
                 """
                 if ntp_x == []:
                     tags_x = pg_x.nodes()
                 else:
                     pg_x_pruned = prune(pg_x, ntp_x, src_2node, x)
-                    if x not in pg_x_pruned or src_2node not in nx.ancestors(pg_x_pruned, x):
+                    if x not in pg_x_pruned or src_2node not in \
+                                                nx.ancestors(pg_x_pruned, x):
                         continue
                     tags_x = pg_x_pruned.nodes()
                 X_ip1 = [w for w in V_ip1 if x in pred_ip1[w]]
                 X_im1 = list(pg_0.predecessors(x))
                 assert X_ip1 != []
                 V_x, next_x, pred_x, t_cf_x = \
-                         _split_graph(src_2node, tgt_2node, x,  X_ip1, X_im1, t_cf_ip1, tags_x, pg_0)
+                         _split_graph(src_2node, tgt_2node, x,  X_ip1, X_im1,
+                                      t_cf_ip1, tags_x, pg_0)
                 V_i.extend(V_x)
                 next_i.update(next_x)
                 pred_i.update(pred_x)
@@ -233,13 +234,16 @@ class CFPG(PathsGraph):
         dic_CF[0] = (V_0, next_src, pred_src, t_cf_src)
         G_cf = _dic_to_graph(dic_CF, pg)
 
-    # Prune out possible unreachable nodes in G_cf
-        nodes_prune = [v for v in G_cf if (v != tgt_3node and not G_cf.successors(v)) or
+        # Prune out possible unreachable nodes in G_cf
+        nodes_prune = [v for v in G_cf if (v != tgt_3node and \
+                        not G_cf.successors(v)) or
                         (v != src_3node and not G_cf.predecessors(v))]
         G_cf_pruned = prune(G_cf, nodes_prune, src_3node, tgt_3node)
-
-        return klass(pg.source_name, pg.source_node + (0,),
-                     pg.target_name, pg.target_node + (0,),
+        # If the source or target nodes have been pruned, the CFPG should be
+        # empty
+        if src_3node not in G_cf_pruned or tgt_3node not in G_cf_pruned:
+            G_cf_pruned = nx.DiGraph()
+        return klass(pg.source_name, src_3node, pg.target_name, tgt_3node,
                      pg.path_length, G_cf_pruned)
 
     @classmethod
