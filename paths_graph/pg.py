@@ -346,7 +346,7 @@ class PathsGraph(object):
 
     def enumerate_paths(self, names_only=True):
         if not self.graph:
-            return tuple([])
+            return tuple()
         paths = [tuple(path) for path in nx.all_simple_paths(self.graph,
                                     self.source_node, self.target_node)]
         if names_only:
@@ -456,7 +456,7 @@ class PathsGraph(object):
             Note that the paths may not be unique.
         """
         if not self.graph:
-            return tuple([])
+            return tuple()
         paths = []
         while len(paths) < num_samples:
             try:
@@ -486,7 +486,7 @@ class PathsGraph(object):
         # Sample a path from the paths graph.
         # If the path graph is empty, there are no paths
         if not self.graph:
-            return tuple([])
+            return tuple()
         path = [self.source_node]
         current = self.source_node
         while current[1] != self.target_name:
@@ -544,7 +544,7 @@ class PathsGraph(object):
 
         # Check to make sure we don't have an empty graph!
         if not self.graph:
-            return tuple([])
+            return tuple()
         # Initialize
         paths = []
         # Repeat for as many samples as we want...
@@ -572,6 +572,11 @@ class PathsGraph(object):
                     # Now, backtrack by resetting the path up a level
                     path = path[:-1]
                     tup_path = tuple(path)
+                    # If we've walked all the way back to the source node
+                    # and the path is no empty, then there are no cycle free
+                    # paths
+                    if not path:
+                        return tuple()
                     # The node we're backtracking to is the new final node
                     # in the path
                     backtrack_node = path[-1]
@@ -602,7 +607,7 @@ class PathsGraph(object):
             else:
                 path = tuple(path)
             paths.append(path)
-        return paths
+        return tuple(paths)
 
     def _successor(self, path, node):
         out_edges = list(self.graph.out_edges(node, data=True))

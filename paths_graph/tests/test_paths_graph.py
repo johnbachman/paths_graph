@@ -426,6 +426,17 @@ def test_cf_sampling_backtracking2():
     sample_paths = pg.sample_cf_paths(10)
     assert set(sample_paths) == set([('A', 'B', 'D', 'C', 'F')])
 
+
+def test_cf_sampling_backtracking_no_paths():
+    g_edges = [('A', 'B'), ('A', 'C'),
+               ('B', 'A'),]
+    g = nx.DiGraph()
+    g.add_edges_from(g_edges)
+    f_level, b_level = get_reachable_sets(g, 'A', 'C', 3)
+    pg = PathsGraph.from_graph(g, 'A', 'C', 3, f_level, b_level)
+    p = pg.sample_cf_paths(10)
+    assert p == tuple()
+
 def test_cf_sampling_signed():
     g_uns = nx.DiGraph()
     g_uns.add_edges_from([
@@ -488,5 +499,4 @@ def test_cf_path_count_random():
     cf_count = pg.count_cf_paths()
     assert cf_count == simple_path_count
     assert set(simple_paths) == set(cf_paths)
-
 
