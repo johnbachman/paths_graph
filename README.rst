@@ -76,3 +76,11 @@ Updating on PyPI
 * python setup.py sdist
 * python setup.py sdist upload
 
+Funding
+-------
+
+Development of this software was funded by DARPA under two programs:
+"Programmatic modeling for reasoning across complex mechanisms"
+(W911NF-14-1-0397) and "An Automated Scientific Discovery Framework (ASDF) for
+Mechanistic Reasoning Across Complex Data" (W911NF018-1-0124).
+
