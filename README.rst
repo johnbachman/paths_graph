@@ -73,8 +73,8 @@ to represent the cycle-free paths from S to T that pass through u but avoid v.
 Updating on PyPI
 ----------------
 * Update the version number in setup.py
-* python setup.py sdist
-* python setup.py sdist upload
+* python setup.py sdist bdist_wheel --universal
+* twine upload dist/*
 
 Funding
 -------
